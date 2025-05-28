@@ -9,7 +9,7 @@ import json
 
 pygame.init()
 inicializarBancoDeDados()
-tamanho = (800,600)
+tamanho = (1000,700)
 relogio = pygame.time.Clock()
 tela = pygame.display.set_mode( tamanho ) 
 pygame.display.set_caption("Iron Man do Marcão")
@@ -18,12 +18,13 @@ pygame.display.set_icon(icone)
 branco = (255,255,255)
 preto = (0, 0 ,0 )
 iron = pygame.image.load("assets/iron.png")
-fundoStart = pygame.image.load("assets/fundoStart.jpg")
+fundoStart = pygame.image.load("assets/fundoStart.png")
 fundoJogo = pygame.image.load("assets/fundoJogo.png")
 fundoDead = pygame.image.load("assets/fundoDead.png")
 missel = pygame.image.load("assets/missile.png")
-missileSound = pygame.mixer.Sound("assets/missile.wav")
-explosaoSound = pygame.mixer.Sound("assets/explosao.wav")
+circle = pygame.image.load("assets/circle.png").convert_alpha() # Objeto pulsativo
+missileSound = pygame.mixer.Sound("assets/missile.mp3")
+explosaoSound = pygame.mixer.Sound("assets/explosao.mp3")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
 pygame.mixer.music.load("assets/ironsound.mp3")
@@ -61,7 +62,34 @@ def jogar():
 
     # Inicia o loop da interface gráfica
     root.mainloop()
-    
+
+    # Tela de boas-vindas
+    esperando = True
+    while esperando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                quit()
+            elif evento.type == pygame.MOUSEBUTTONDOWN:
+                if botaoIniciar.collidepoint(evento.pos):
+                    esperando = False
+
+        tela.fill(branco)
+        tela.blit(fundoJogo, (0, 0))
+
+        # Mensagens
+        titulo = pygame.font.SysFont("arial", 50).render(f"Bem-vindo, {nome}!", True, preto)
+        instrucoes = pygame.font.SysFont("arial", 24).render("Neste jogo, o personagem Lightning McQueen deverá usar seu potente V8 para desviar dos raios.", True, preto)
+        iniciarTexto = pygame.font.SysFont("arial", 30).render("Clique aqui para iniciar", True, preto)
+
+        tela.blit(titulo, (150, 100))
+        tela.blit(instrucoes, (100, 200))
+
+        # Botão
+        botaoIniciar = pygame.draw.rect(tela, branco, (250, 300, 300, 50), border_radius=15)
+        tela.blit(iniciarTexto, (270, 310))
+
+        pygame.display.update()
+        relogio.tick(60)
 
     posicaoXPersona = 400
     posicaoYPersona = 300
@@ -78,30 +106,47 @@ def jogar():
     larguaMissel  = 50
     alturaMissel  = 250
     dificuldade  = 30
+
+
+    # Implementando o botão de PAUSE
+    pausado = False
+
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 quit()
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_RIGHT:
-                movimentoXPersona = 15
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_LEFT:
-                movimentoXPersona = -15
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_RIGHT:
-                movimentoXPersona = 0
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_LEFT:
-                movimentoXPersona = 0
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_UP:
-                movimentoYPersona = -15
-            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_DOWN:
-                movimentoYPersona = 15
-            elif evento.type == pygame.KEYUP and evento.key == pygame.K_UP:
-                movimentoYPersona = 0
-            elif evento.type == pygame.KEYUP and evento.key == pygame.K_DOWN:
-                movimentoYPersona = 0
-                
-        posicaoXPersona = posicaoXPersona + movimentoXPersona            
-        posicaoYPersona = posicaoYPersona + movimentoYPersona            
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_SPACE:
+                    pausado = not pausado  # Alterna entre pausado/despausado
+                elif not pausado:
+                    if evento.key == pygame.K_RIGHT:
+                        movimentoXPersona = 15
+                    elif evento.key == pygame.K_LEFT:
+                        movimentoXPersona = -15
+                    elif evento.key == pygame.K_UP:
+                        movimentoYPersona = -15
+                    elif evento.key == pygame.K_DOWN:
+                        movimentoYPersona = 15
+            elif evento.type == pygame.KEYUP and not pausado:
+                if evento.key in [pygame.K_RIGHT, pygame.K_LEFT]:
+                    movimentoXPersona = 0
+                elif evento.key in [pygame.K_UP, pygame.K_DOWN]:
+                    movimentoYPersona = 0
+        if pausado:
+            pause_text = pygame.font.SysFont("arial", 80).render("PAUSE", True, preto)
+            tela.blit(pause_text, ((tamanho[0] - pause_text.get_width()) // 2, (tamanho[1] - pause_text.get_height()) // 2))
+            pygame.display.update()
+            relogio.tick(10)
+            continue 
         
+        # Movimento apenas em um eixo por vez
+        if movimentoXPersona != 0:
+            posicaoXPersona += movimentoXPersona
+            movimentoYPersona = 0  # Cancela movimento Y se houver em X
+        elif movimentoYPersona != 0:
+            posicaoYPersona += movimentoYPersona
+            movimentoXPersona = 0  # Cancela movimento X se houver em Y
+
         if posicaoXPersona < 0 :
             posicaoXPersona = 15
         elif posicaoXPersona >550:
@@ -131,6 +176,10 @@ def jogar():
         
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
         tela.blit(texto, (15,15))
+        # Mostrando ao usuário a opção PAUSE
+        pauseHint = fonteMenu.render("Pressione Espaço para Pausar o Jogo", True, branco)
+        tela.blit(pauseHint, (150, 15))  # posição ajustável
+
         
         pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona+larguraPersona))
         pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona+alturaPersona))
