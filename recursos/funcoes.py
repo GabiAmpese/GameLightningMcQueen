@@ -34,3 +34,10 @@ def escreverDados(nome, pontos):
     banco = open("base.atitus","w")
     banco.write(json.dumps(dadosDict))
     banco.close()
+
+def registrar_log(mensagem):
+    agora = datetime.now().strftime("[%d/%m/%Y %H:%M:%S]")
+    linha = f"{agora} {mensagem}\n"
+    
+    with open("recursos/log.dat", "a") as arquivo_log:
+        arquivo_log.write(linha)

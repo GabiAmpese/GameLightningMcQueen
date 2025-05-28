@@ -6,8 +6,17 @@ import tkinter as tk
 from tkinter import messagebox
 from recursos.funcoes import inicializarBancoDeDados
 from recursos.funcoes import escreverDados
+from recursos.funcoes import registrar_log
 import json
 
+# Adicionando o LOG
+def main():
+    registrar_log("Sistema iniciado com sucesso.")
+    print("Executando o programa...")
+
+if __name__ == "__main__":
+    main()
+    
 pygame.init()
 inicializarBancoDeDados()
 tamanho = (1000,700)
@@ -19,16 +28,19 @@ pygame.display.set_icon(icone)
 branco = (255,255,255)
 preto = (0, 0 ,0 )
 iron = pygame.image.load("assets/iron.png")
+iron = pygame.transform.scale(pygame.image.load("assets/iron.png"), (300, 200))
 fundoStart = pygame.image.load("assets/fundoStart.png")
 fundoJogo = pygame.image.load("assets/fundoJogo.png")
 fundoDead = pygame.image.load("assets/fundoDead.png")
 missel = pygame.image.load("assets/missile.png")
 circle = pygame.image.load("assets/circle.png").convert_alpha() # Objeto pulsativo
+fundoIntro = pygame.image.load("assets/fundoIntro.png")
 missileSound = pygame.mixer.Sound("assets/missile.mp3")
 explosaoSound = pygame.mixer.Sound("assets/explosao.mp3")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 fonteMorte = pygame.font.SysFont("arial",120)
 pygame.mixer.music.load("assets/ironsound.mp3")
+pygame.mixer.music.set_volume(0.2)
 
 def jogar():
     largura_janela = 300
@@ -75,36 +87,19 @@ def jogar():
                     esperando = False
 
         tela.fill(branco)
-        tela.blit(fundoJogo, (0, 0))
+        tela.blit(fundoIntro, (0,0))
 
         # Mensagens
-        titulo = pygame.font.SysFont("arial", 50).render(f"Bem-vindo, {nome}!", True, preto)
-        instrucoes = pygame.font.SysFont("arial", 24).render("Neste jogo, o personagem Lightning McQueen deverá usar seu potente V8 para desviar dos raios.", True, preto)
+        titulo = pygame.font.SysFont("arialblack", 70).render(f"Bem-vindo, {nome}!", True, preto)
+        instrucoes = pygame.font.SysFont("arial", 35).render("Use o potente motor V8 do Lightning McQueen e desvie dos raios!", True, branco)
         iniciarTexto = pygame.font.SysFont("arial", 30).render("Clique aqui para iniciar", True, preto)
 
-        tela.blit(titulo, (150, 100))
-        tela.blit(instrucoes, (100, 200))
+        tela.blit(titulo, (2, 2))
+        tela.blit(instrucoes, (4,100))
 
         # Botão
-        botaoIniciar = pygame.draw.rect(tela, branco, (250, 300, 300, 50), border_radius=15)
-        tela.blit(iniciarTexto, (270, 310))
-        
-        # Lógica de pulsação
-        tempo = pygame.time.get_ticks() / 1000  
-        escala = 1 + 0.1 * math.sin(tempo * 4)
-
-        # Redimensiona a imagem conforme a escala
-        largura_original, altura_original = circle.get_size()
-        nova_largura = int(largura_original * escala)
-        nova_altura = int(altura_original * escala)
-        circle_pulsando = pygame.transform.scale(circle, (nova_largura, nova_altura))
-
-        # Posição no canto superior direito
-        pos_x = tamanho[0] - nova_largura - 20  # 20 px de margem da borda
-        pos_y = 20
-
-        tela.blit(circle_pulsando, (pos_x, pos_y))
-
+        botaoIniciar = pygame.draw.rect(tela, branco, (4,180, 300, 50), border_radius=15)
+        tela.blit(iniciarTexto, (4 + (300 - iniciarTexto.get_width()) // 2, 180 + (50 - iniciarTexto.get_height()) // 2))
 
         pygame.display.update()
         relogio.tick(60)
@@ -166,28 +161,44 @@ def jogar():
             movimentoXPersona = 0  # Cancela movimento X se houver em Y
 
         if posicaoXPersona < 0 :
-            posicaoXPersona = 15
-        elif posicaoXPersona >550:
-            posicaoXPersona = 540
+            posicaoXPersona = 0
+        elif posicaoXPersona >750:
+            posicaoXPersona = 750
             
         if posicaoYPersona < 0 :
-            posicaoYPersona = 15
-        elif posicaoYPersona > 473:
-            posicaoYPersona = 463
+            posicaoYPersona = 0
+        elif posicaoYPersona > 540:
+            posicaoYPersona = 540
         
             
         tela.fill(branco)
         tela.blit(fundoJogo, (0,0) )
         #pygame.draw.circle(tela, preto, (posicaoXPersona,posicaoYPersona), 40, 0 )
         tela.blit( iron, (posicaoXPersona, posicaoYPersona) )
-        
+
+         # Lógica de pulsação
+        tempo = pygame.time.get_ticks() / 1000  
+        escala = 1 + 0.1 * math.sin(tempo * 4)
+
+        # Redimensiona a imagem conforme a escala
+        largura_original, altura_original = circle.get_size()
+        nova_largura = int(largura_original * escala)
+        nova_altura = int(altura_original * escala)
+        circle_pulsando = pygame.transform.scale(circle, (nova_largura, nova_altura))
+
+        # Posição no canto superior direito
+        pos_x = tamanho[0] - nova_largura - 20  # 20 px de margem da borda
+        pos_y = 20
+
+        tela.blit(circle_pulsando, (pos_x, pos_y))
         posicaoYMissel = posicaoYMissel + velocidadeMissel
+        if posicaoYMissel == 0:
+            pygame.mixer.Sound.play(missileSound)
         if posicaoYMissel > 600:
             posicaoYMissel = -240
             pontos = pontos + 1
             velocidadeMissel = velocidadeMissel + 1
             posicaoXMissel = random.randint(0,800)
-            pygame.mixer.Sound.play(missileSound)
             
             
         tela.blit( missel, (posicaoXMissel, posicaoYMissel) )
@@ -195,7 +206,7 @@ def jogar():
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
         tela.blit(texto, (15,15))
         # Mostrando ao usuário a opção PAUSE
-        pauseHint = fonteMenu.render("Pressione Espaço para Pausar o Jogo", True, branco)
+        pauseHint = fonteMenu.render("Press Space to Pause Game", True, preto)
         tela.blit(pauseHint, (150, 15))  # posição ajustável
 
         
