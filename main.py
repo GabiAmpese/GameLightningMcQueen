@@ -1,6 +1,7 @@
 import pygame
 import random
 import os
+import math
 import tkinter as tk
 from tkinter import messagebox
 from recursos.funcoes import inicializarBancoDeDados
@@ -87,6 +88,23 @@ def jogar():
         # Botão
         botaoIniciar = pygame.draw.rect(tela, branco, (250, 300, 300, 50), border_radius=15)
         tela.blit(iniciarTexto, (270, 310))
+        
+        # Lógica de pulsação
+        tempo = pygame.time.get_ticks() / 1000  
+        escala = 1 + 0.1 * math.sin(tempo * 4)
+
+        # Redimensiona a imagem conforme a escala
+        largura_original, altura_original = circle.get_size()
+        nova_largura = int(largura_original * escala)
+        nova_altura = int(altura_original * escala)
+        circle_pulsando = pygame.transform.scale(circle, (nova_largura, nova_altura))
+
+        # Posição no canto superior direito
+        pos_x = tamanho[0] - nova_largura - 20  # 20 px de margem da borda
+        pos_y = 20
+
+        tela.blit(circle_pulsando, (pos_x, pos_y))
+
 
         pygame.display.update()
         relogio.tick(60)
