@@ -1,4 +1,3 @@
-# pip install cx_freeze
 import cx_Freeze
 executaveis = [ 
                cx_Freeze.Executable(script="feito.py", icon="assets/icone.ico") ]
@@ -12,5 +11,6 @@ cx_Freeze.setup(
     }, executables = executaveis
 )
 
+# pip install cx_freeze
 # python setup.py build
 # python setup.py bdist_msi

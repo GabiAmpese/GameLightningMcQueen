@@ -9,7 +9,7 @@ from recursos.funcoes import escreverDados
 from recursos.funcoes import registrar_log
 import json
 
-# Adicionando o LOG
+
 def main():
     registrar_log("Sistema iniciado com sucesso.")
     print("Executando o programa...")
@@ -27,14 +27,17 @@ icone  = pygame.image.load("assets/icone.png")
 pygame.display.set_icon(icone)
 branco = (255,255,255)
 preto = (0, 0 ,0 )
-iron = pygame.image.load("assets/iron.png")
+azul = (0, 0, 255)
+vermelho = (255, 0, 0)
+iron = pygame.image.load("assets/iron.png").convert_alpha() 
 iron = pygame.transform.scale(pygame.image.load("assets/iron.png"), (300, 200))
 fundoStart = pygame.image.load("assets/fundoStart.png")
 fundoJogo = pygame.image.load("assets/fundoJogo.png")
 fundoDead = pygame.image.load("assets/fundoDead.png")
-missel = pygame.image.load("assets/missile.png")
-circle = pygame.image.load("assets/circle.png").convert_alpha() # Objeto pulsativo
+missel = pygame.image.load("assets/missile.png").convert_alpha() 
+circle = pygame.image.load("assets/circle.png").convert_alpha() 
 fundoIntro = pygame.image.load("assets/fundoIntro.png")
+objrandom = pygame.image.load("assets/objrandom.png").convert_alpha() 
 missileSound = pygame.mixer.Sound("assets/missile.mp3")
 explosaoSound = pygame.mixer.Sound("assets/explosao.mp3")
 fonteMenu = pygame.font.SysFont("comicsans",18)
@@ -42,21 +45,19 @@ fonteMorte = pygame.font.SysFont("arial",120)
 pygame.mixer.music.load("assets/ironsound.mp3")
 pygame.mixer.music.set_volume(0.2)
 
+
 def jogar():
     largura_janela = 300
     altura_janela = 50
     def obter_nome():
-        global nome # variavel que pode ser acessada fora da def
-        nome = entry_nome.get()  # Obtém o texto digitado
-        if not nome:  # Se o campo estiver vazio
-            messagebox.showwarning("Aviso", "Por favor, digite seu nome!")  # Exibe uma mensagem de aviso
+        global nome 
+        nome = entry_nome.get()  
+        if not nome:  
+            messagebox.showwarning("Aviso", "Por favor, digite seu nome!")  
         else:
-            #print(f'Nome digitado: {nome}')  # Exibe o nome no console
-            root.destroy()  # Fecha a janela após a entrada válida
+            root.destroy()  
 
-    # Criação da janela principal
     root = tk.Tk()
-    # Obter as dimensões da tela
     largura_tela = root.winfo_screenwidth()
     altura_tela = root.winfo_screenheight()
     pos_x = (largura_tela - largura_janela) // 2
@@ -65,18 +66,14 @@ def jogar():
     root.title("Informe seu nickname")
     root.protocol("WM_DELETE_WINDOW", obter_nome)
 
-    # Entry (campo de texto)
     entry_nome = tk.Entry(root)
     entry_nome.pack()
 
-    # Botão para pegar o nome
     botao = tk.Button(root, text="Enviar", command=obter_nome)
     botao.pack()
 
-    # Inicia o loop da interface gráfica
     root.mainloop()
 
-    # Tela de boas-vindas
     esperando = True
     while esperando:
         for evento in pygame.event.get():
@@ -85,25 +82,26 @@ def jogar():
             elif evento.type == pygame.MOUSEBUTTONDOWN:
                 if botaoIniciar.collidepoint(evento.pos):
                     esperando = False
-
-        tela.fill(branco)
+        
         tela.blit(fundoIntro, (0,0))
 
-        # Mensagens
-        titulo = pygame.font.SysFont("arialblack", 70).render(f"Bem-vindo, {nome}!", True, preto)
+        titulo = pygame.font.SysFont("arialblack", 70).render(f"Bem-vindo, {nome}!", True, vermelho)
         instrucoes = pygame.font.SysFont("arial", 35).render("Use o potente motor V8 do Lightning McQueen e desvie dos raios!", True, branco)
-        iniciarTexto = pygame.font.SysFont("arial", 30).render("Clique aqui para iniciar", True, preto)
+        iniciarTexto = pygame.font.SysFont("arial", 30).render("Clique aqui para iniciar", True, branco)
 
         tela.blit(titulo, (2, 2))
-        tela.blit(instrucoes, (4,100))
+        tela.blit(instrucoes, (8,100))
 
-        # Botão
-        botaoIniciar = pygame.draw.rect(tela, branco, (4,180, 300, 50), border_radius=15)
+        botaoIniciar = pygame.draw.rect(tela, azul, (8,180, 300, 50), border_radius=15)
         tela.blit(iniciarTexto, (4 + (300 - iniciarTexto.get_width()) // 2, 180 + (50 - iniciarTexto.get_height()) // 2))
-
+        
         pygame.display.update()
         relogio.tick(60)
 
+    posX_objrandom = random.randint(0, tamanho[0] - objrandom.get_width())
+    posY_objrandom = random.randint(0, tamanho[1] - objrandom.get_height())
+    velX_objrandom = random.choice([-2, -1, 1, 2])
+    velY_objrandom = random.choice([-2, -1, 1, 2])
     posicaoXPersona = 400
     posicaoYPersona = 300
     movimentoXPersona  = 0
@@ -111,17 +109,9 @@ def jogar():
     posicaoXMissel = 400
     posicaoYMissel = -240
     velocidadeMissel = 1
-    pygame.mixer.Sound.play(missileSound)
-    pygame.mixer.music.play(-1) # -1 = looping
+    pygame.mixer.music.play(-1)
     pontos = 0
-    larguraPersona = 250
-    alturaPersona = 127
-    larguaMissel  = 50
-    alturaMissel  = 250
-    dificuldade  = 30
 
-
-    # Implementando o botão de PAUSE
     pausado = False
 
     while True:
@@ -130,7 +120,7 @@ def jogar():
                 quit()
             elif evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_SPACE:
-                    pausado = not pausado  # Alterna entre pausado/despausado
+                    pausado = not pausado  
                 elif not pausado:
                     if evento.key == pygame.K_RIGHT:
                         movimentoXPersona = 15
@@ -152,13 +142,12 @@ def jogar():
             relogio.tick(10)
             continue 
         
-        # Movimento apenas em um eixo por vez
         if movimentoXPersona != 0:
             posicaoXPersona += movimentoXPersona
-            movimentoYPersona = 0  # Cancela movimento Y se houver em X
+            movimentoYPersona = 0  
         elif movimentoYPersona != 0:
             posicaoYPersona += movimentoYPersona
-            movimentoXPersona = 0  # Cancela movimento X se houver em Y
+            movimentoXPersona = 0  
 
         if posicaoXPersona < 0 :
             posicaoXPersona = 0
@@ -170,24 +159,28 @@ def jogar():
         elif posicaoYPersona > 540:
             posicaoYPersona = 540
         
+        posX_objrandom += velX_objrandom
+        posY_objrandom += velY_objrandom
+
+        if posX_objrandom <= 0 or posX_objrandom >= tamanho[0] - objrandom.get_width():
+            velX_objrandom = -velX_objrandom
+        if posY_objrandom <= 0 or posY_objrandom >= tamanho[1] - objrandom.get_height():
+            velY_objrandom = -velY_objrandom
             
         tela.fill(branco)
         tela.blit(fundoJogo, (0,0) )
-        #pygame.draw.circle(tela, preto, (posicaoXPersona,posicaoYPersona), 40, 0 )
+        tela.blit(objrandom, (posX_objrandom, posY_objrandom))
         tela.blit( iron, (posicaoXPersona, posicaoYPersona) )
-
-         # Lógica de pulsação
+    
         tempo = pygame.time.get_ticks() / 1000  
         escala = 1 + 0.1 * math.sin(tempo * 4)
 
-        # Redimensiona a imagem conforme a escala
         largura_original, altura_original = circle.get_size()
         nova_largura = int(largura_original * escala)
         nova_altura = int(altura_original * escala)
         circle_pulsando = pygame.transform.scale(circle, (nova_largura, nova_altura))
 
-        # Posição no canto superior direito
-        pos_x = tamanho[0] - nova_largura - 20  # 20 px de margem da borda
+        pos_x = tamanho[0] - nova_largura - 20  
         pos_y = 20
 
         tela.blit(circle_pulsando, (pos_x, pos_y))
@@ -200,33 +193,26 @@ def jogar():
             velocidadeMissel = velocidadeMissel + 1
             posicaoXMissel = random.randint(0,800)
             
-            
         tela.blit( missel, (posicaoXMissel, posicaoYMissel) )
         
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
         tela.blit(texto, (15,15))
-        # Mostrando ao usuário a opção PAUSE
+        
         pauseHint = fonteMenu.render("Press Space to Pause Game", True, preto)
-        tela.blit(pauseHint, (150, 15))  # posição ajustável
+        tela.blit(pauseHint, (150, 15))  
 
-        
-        pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona+larguraPersona))
-        pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona+alturaPersona))
-        pixelsMisselX = list(range(posicaoXMissel, posicaoXMissel + larguaMissel))
-        pixelsMisselY = list(range(posicaoYMissel, posicaoYMissel + alturaMissel))
-        
-        os.system("cls")
-        # print( len( list( set(pixelsMisselX).intersection(set(pixelsPersonaX))   ) )   )
-        if  len( list( set(pixelsMisselY).intersection(set(pixelsPersonaY))) ) > dificuldade:
-            if len( list( set(pixelsMisselX).intersection(set(pixelsPersonaX))   ) )  > dificuldade:
-                escreverDados(nome, pontos)
-                dead()
-                
-            else:
-                print("Ainda Vivo, mas por pouco!")
+        mask_iron = pygame.mask.from_surface(iron)
+        mask_missel = pygame.mask.from_surface(missel)
+
+        offset = (posicaoXMissel - posicaoXPersona, posicaoYMissel - posicaoYPersona)
+        colidiu = mask_iron.overlap(mask_missel, offset)
+
+        if colidiu:
+            escreverDados(nome, pontos)
+            dead()
         else:
             print("Ainda Vivo")
-        
+
         pygame.display.update()
         relogio.tick(60)
 
@@ -237,7 +223,6 @@ def start():
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
     
-
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -252,20 +237,15 @@ def start():
 
                 
             elif evento.type == pygame.MOUSEBUTTONUP:
-                # Verifica se o clique foi dentro do retângulo
                 if startButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
                     jogar()
                 if quitButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     quit()
-                    
-            
-            
+                     
         tela.fill(branco)
         tela.blit(fundoStart, (0,0) )
 
@@ -289,19 +269,15 @@ def dead():
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
     
-    
     root = tk.Tk()
     root.title("Tela da Morte")
 
-    # Adiciona um título na tela
     label = tk.Label(root, text="Log das Partidas", font=("Arial", 16))
     label.pack(pady=10)
 
-    # Criação do Listbox para mostrar o log
     listbox = tk.Listbox(root, width=50, height=10, selectmode=tk.SINGLE)
     listbox.pack(pady=20)
 
-    # Adiciona o log das partidas no Listbox
     log_partidas = open("base.atitus", "r").read()
     log_partidas = json.loads(log_partidas)
     for chave in log_partidas:
@@ -320,27 +296,19 @@ def dead():
                     larguraButtonQuit = 140
                     alturaButtonQuit  = 35
 
-                
             elif evento.type == pygame.MOUSEBUTTONUP:
-                # Verifica se o clique foi dentro do retângulo
                 if startButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonStart = 150
                     alturaButtonStart  = 40
                     jogar()
                 if quitButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     quit()
                     
-        
-            
-            
         tela.fill(branco)
         tela.blit(fundoDead, (0,0) )
 
-        
         startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
         startTexto = fonteMenu.render("Iniciar Game", True, preto)
         tela.blit(startTexto, (25,12))
@@ -349,10 +317,8 @@ def dead():
         quitTexto = fonteMenu.render("Sair do Game", True, preto)
         tela.blit(quitTexto, (25,62))
 
-
         pygame.display.update()
         relogio.tick(60)
 
 
 start()
-
