@@ -4,11 +4,27 @@ import os
 import math
 import tkinter as tk
 from tkinter import messagebox
+import speech_recognition as sr
 from recursos.funcoes import inicializarBancoDeDados
 from recursos.funcoes import escreverDados
 from recursos.funcoes import registrar_log
 import json
 
+def reconhecer_comando():
+    reconhecedor = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Fale um comando: iniciar ou sair...")
+        reconhecedor.adjust_for_ambient_noise(source)
+        audio = reconhecedor.listen(source)
+    try:
+        comando = reconhecedor.recognize_google(audio, language='pt-BR').lower()
+        print(f"Você disse: {comando}")
+        return comando
+    except sr.UnknownValueError:
+        print("Não entendi o que foi dito.")
+    except sr.RequestError:
+        print("Erro ao conectar ao serviço de reconhecimento.")
+    return None
 
 def main():
     registrar_log("Sistema iniciado com sucesso.")
@@ -235,7 +251,6 @@ def start():
                     larguraButtonQuit = 140
                     alturaButtonQuit  = 35
 
-                
             elif evento.type == pygame.MOUSEBUTTONUP:
                 if startButton.collidepoint(evento.pos):
                     larguraButtonStart = 150
@@ -245,7 +260,14 @@ def start():
                     larguraButtonQuit = 150
                     alturaButtonQuit  = 40
                     quit()
-                     
+
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_v:
+                comando = reconhecer_comando()
+                if comando == "iniciar":
+                    jogar()
+                elif comando == "sair":
+                    quit()
+
         tela.fill(branco)
         tela.blit(fundoStart, (0,0) )
 
@@ -257,6 +279,9 @@ def start():
         quitTexto = fonteMenu.render("Sair do Game", True, preto)
         tela.blit(quitTexto, (25,62))
         
+        vozHint = fonteMenu.render("Pressione 'V' para comando de voz: Sair/Iniciar", True, preto)
+        tela.blit(vozHint, (10, 120))
+
         pygame.display.update()
         relogio.tick(60)
 
