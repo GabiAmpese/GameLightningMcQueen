@@ -340,7 +340,7 @@ def dead():
         tela.blit(fundoDead, (0, 0))
 
         fonte_log = pygame.font.SysFont("arial", 24)
-        subtitulo = pygame.font.SysFont("arial", 32).render("Últimos 5 Registros:", True, vermelho)
+        subtitulo = pygame.font.SysFont("arial", 32).render("Últimos Registros:", True, vermelho)
 
         x_subtitulo = tamanho[0] - subtitulo.get_width() - 20
         y_subtitulo = tamanho[1] - (len(logs_formatados) + 1) * 35 - 20 
