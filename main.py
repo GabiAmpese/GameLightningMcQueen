@@ -264,26 +264,26 @@ def start():
 def dead():
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(explosaoSound)
+
     larguraButtonStart = 150
     alturaButtonStart  = 40
     larguraButtonQuit = 150
     alturaButtonQuit  = 40
-    
-    root = tk.Tk()
-    root.title("Tela da Morte")
 
-    label = tk.Label(root, text="Log das Partidas", font=("Arial", 16))
-    label.pack(pady=10)
+    try:
+        with open("base.atitus", "r") as f:
+            log_partidas = json.load(f)
+    except:
+        log_partidas = {}
 
-    listbox = tk.Listbox(root, width=50, height=10, selectmode=tk.SINGLE)
-    listbox.pack(pady=20)
-
-    log_partidas = open("base.atitus", "r").read()
-    log_partidas = json.loads(log_partidas)
+    logs_formatados = []
     for chave in log_partidas:
-        listbox.insert(tk.END, f"Pontos: {log_partidas[chave][0]} na data: {log_partidas[chave][1]} - Nickname: {chave}")  # Adiciona cada linha no Listbox
-    
-    root.mainloop()
+        pontos = log_partidas[chave][0]
+        data = log_partidas[chave][1]
+        logs_formatados.append(f"{chave} - Pontos: {pontos} - Data: {data}")
+
+    logs_formatados = logs_formatados[-10:]
+
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -291,34 +291,43 @@ def dead():
             elif evento.type == pygame.MOUSEBUTTONDOWN:
                 if startButton.collidepoint(evento.pos):
                     larguraButtonStart = 140
-                    alturaButtonStart  = 35
+                    alturaButtonStart = 35
                 if quitButton.collidepoint(evento.pos):
                     larguraButtonQuit = 140
-                    alturaButtonQuit  = 35
+                    alturaButtonQuit = 35
 
             elif evento.type == pygame.MOUSEBUTTONUP:
                 if startButton.collidepoint(evento.pos):
-                    larguraButtonStart = 150
-                    alturaButtonStart  = 40
                     jogar()
                 if quitButton.collidepoint(evento.pos):
-                    larguraButtonQuit = 150
-                    alturaButtonQuit  = 40
                     quit()
-                    
-        tela.fill(branco)
-        tela.blit(fundoDead, (0,0) )
 
-        startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
+        tela.fill(branco)
+        tela.blit(fundoDead, (0, 0))
+
+        fonte_log = pygame.font.SysFont("arial", 24)
+        subtitulo = pygame.font.SysFont("arial", 32).render("Últimos 5 Registros:", True, vermelho)
+
+        x_subtitulo = tamanho[0] - subtitulo.get_width() - 20
+        y_subtitulo = tamanho[1] - (len(logs_formatados) + 1) * 35 - 20 
+        tela.blit(subtitulo, (x_subtitulo, y_subtitulo))
+
+        y = y_subtitulo + 40
+        for log in logs_formatados:
+            linha = fonte_log.render(log, True, branco)
+            x_linha = tamanho[0] - linha.get_width() - 20
+            tela.blit(linha, (x_linha, y))
+            y += 35
+
+        startButton = pygame.draw.rect(tela, branco, (10, 10, larguraButtonStart, alturaButtonStart), border_radius=15)
         startTexto = fonteMenu.render("Iniciar Game", True, preto)
-        tela.blit(startTexto, (25,12))
-        
-        quitButton = pygame.draw.rect(tela, branco, (10,60, larguraButtonQuit, alturaButtonQuit), border_radius=15)
+        tela.blit(startTexto, (25, 12))
+
+        quitButton = pygame.draw.rect(tela, branco, (10, 60, larguraButtonQuit, alturaButtonQuit), border_radius=15)
         quitTexto = fonteMenu.render("Sair do Game", True, preto)
-        tela.blit(quitTexto, (25,62))
+        tela.blit(quitTexto, (25, 62))
 
         pygame.display.update()
         relogio.tick(60)
-
 
 start()
