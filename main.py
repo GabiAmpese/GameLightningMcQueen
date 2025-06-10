@@ -5,6 +5,7 @@ import math
 import tkinter as tk
 from tkinter import messagebox
 import speech_recognition as sr
+import pyttsx3
 from recursos.funcoes import inicializarBancoDeDados
 from recursos.funcoes import escreverDados
 from recursos.funcoes import registrar_log
@@ -25,6 +26,12 @@ def reconhecer_comando():
     except sr.RequestError:
         print("Erro ao conectar ao serviço de reconhecimento.")
     return None
+
+def falar(texto):
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150) 
+    engine.say(texto)
+    engine.runAndWait()
 
 def main():
     registrar_log("Sistema iniciado com sucesso.")
@@ -264,8 +271,10 @@ def start():
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_v:
                 comando = reconhecer_comando()
                 if comando == "iniciar":
+                    falar("Jogo iniciado")
                     jogar()
                 elif comando == "sair":
+                    falar("Encerrando o jogo")
                     quit()
 
         tela.fill(branco)
