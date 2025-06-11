@@ -23,3 +23,6 @@ GitHub: https://github.com/GabiAmpese
 
 # Testador do Jogo: Maria Moro
 # RA: 1138252
+
+# Testador do Jogo: Emilly Santos
+# RA: 1138184
