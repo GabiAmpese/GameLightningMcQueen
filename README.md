@@ -26,3 +26,6 @@ GitHub: https://github.com/GabiAmpese
 
 # Testador do Jogo: Emilly Santos
 # RA: 1138184
+
+# Testador do Jogo: Lavínia Heloíse Cavalheiro S.
+# RA: 1138154
